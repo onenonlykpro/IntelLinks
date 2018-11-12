@@ -55,10 +55,6 @@ ui <- fluidPage(
       # textInput("hypothesis6", "Hypothesis #6", value = "", width = NULL, placeholder = NULL)
       ))),
   br(),
-  
-  fluidRow(column(12,
-                  tableOutput("ACHTable"))),
-  br(),
 
   fluidRow(
     column(12, wellPanel(
@@ -116,7 +112,11 @@ ui <- fluidPage(
       #                            "Inconsistent with hypothesis" = "I",
       #                            "Highly inconsistent with hypothesis" = "II"), 
       #             selected = "N"),
-      actionButton("update", "Update ACH")))))
+      actionButton("update", "Update ACH")))),
+  br(),
+  
+  fluidRow(column(12,
+                  dataTableOutput("ACHPrintout"))))
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
@@ -142,10 +142,35 @@ server <- function(input, output, session) {
   output$ACHTable <- renderTable({values$df})
   output$hypothesis1 <- renderText({ paste0("Consistency with H1: ", input$hypothesis1)})
   output$hypothesis2 <- renderText({ paste0("Consistency with H2: ", input$hypothesis2)})
-  output$hypothesis3 <- renderText({ paste0("Consistency with H3: ", input$hypothesis3)})
-  output$hypothesis4 <- renderText({ paste0("Consistency with H4: ", input$hypothesis4)})
-  output$hypothesis5 <- renderText({ paste0("Consistency with H5: ", input$hypothesis5)})
-  output$hypothesis6 <- renderText({ paste0("Consistency with H3: ", input$hypothesis6)})
+  # output$hypothesis3 <- renderText({ paste0("Consistency with H3: ", input$hypothesis3)})
+  # output$hypothesis4 <- renderText({ paste0("Consistency with H4: ", input$hypothesis4)})
+  # output$hypothesis5 <- renderText({ paste0("Consistency with H5: ", input$hypothesis5)})
+  # output$hypothesis6 <- renderText({ paste0("Consistency with H3: ", input$hypothesis6)})
+  
+  output$ACHPrintout <- renderDataTable({
+    TestACH <- values$df
+    TestACH$CredMultiplier[TestACH$Credibility == "High"] <- 1.414
+    TestACH$CredMultiplier[TestACH$Credibility == "Moderate"] <- 1.000
+    TestACH$CredMultiplier[TestACH$Credibility == "Low"] <- 0.707
+    TestACH$RelaMultiplier[TestACH$Relevance == "High"] <- 1.414
+    TestACH$RelaMultiplier[TestACH$Relevance == "Moderate"] <- 1.000
+    TestACH$RelaMultiplier[TestACH$Relevance == "Low"] <- 0.707
+    TestACH$ConsisScoreH1[TestACH$H1 == "II"] <- -2
+    TestACH$ConsisScoreH1[TestACH$H1 == "I"] <- -1
+    TestACH$ConsisScoreH1[TestACH$H1 == "CC"] <- 1
+    TestACH$ConsisScoreH1[TestACH$H1 == "C" | TestACH$H.1 == "N"] <- 0
+    TestACH$ConsisScoreH2[TestACH$H2 == "II"] <- -2
+    TestACH$ConsisScoreH2[TestACH$H2 == "I"] <- -1
+    TestACH$ConsisScoreH2[TestACH$H2 == "CC"] <- 1
+    TestACH$ConsisScoreH2[TestACH$H2 == "C" | TestACH$H.2 == "N"] <- 0
+    TestACH$OverallScoreH1 <- (TestACH$ConsisScoreH1 * TestACH$CredMultiplier) * TestACH$RelaMultiplier
+    TestACH$OverallScoreH2 <- (TestACH$ConsisScoreH2 * TestACH$CredMultiplier) * TestACH$RelaMultiplier
+    Printout <- datatable(TestACH,  colnames = c("Evidence", "Source / Link", "Credibility", "Relevance", "H1", "H2", "Credibility Multiplier", "Relevance Multipier", "H1 Consistency Score", "H2 Consistency Score", "H1 Score", "H2 Score"), 
+              options = list(columnDefs = list(list(visible = FALSE, targets = c(7,8,9,10))))) %>% formatStyle(names(TestACH), 
+                                                                                                               backgroundColor = styleEqual(c("II", "I", "N", "C", "CC"), c("red", "pink", "white", "lightgreen", "forestgreen"))
+              )
+    Printout
+  })
 }
 # Run the application 
 shinyApp(ui = ui, server = server)
