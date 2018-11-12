@@ -46,18 +46,15 @@ ui <- fluidPage(
   br(),
   
   fluidRow(
-    column(12, wellPanel(
+    column(6, wellPanel(
       textInput("hypothesis1", "Hypothesis #1", value = "", width = NULL, placeholder = NULL),
       textInput("hypothesis2", "Hypothesis #2", value = "", width = NULL, placeholder = NULL)
       # textInput("hypothesis3", "Hypothesis #3", value = "", width = NULL, placeholder = NULL),
       # textInput("hypothesis4", "Hypothesis #4", value = "", width = NULL, placeholder = NULL),
       # textInput("hypothesis5", "Hypothesis #5", value = "", width = NULL, placeholder = NULL),
       # textInput("hypothesis6", "Hypothesis #6", value = "", width = NULL, placeholder = NULL)
-      ))),
-  br(),
-
-  fluidRow(
-    column(12, wellPanel(
+      )),
+    column(6, wellPanel(
       textInput("evidence", "Evidence", value = "", width = NULL, placeholder = NULL),
       textInput("source", "Source / Link", value = "", width = NULL, placeholder = NULL),
       selectInput("credibility", "Credibility", 
