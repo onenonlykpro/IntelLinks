@@ -7,3 +7,5 @@ Making judgement on an issue that involves a high risk of error in reasoning?  R
 3. Evaluate each peice of evidence and/or findings against each hypothesis and aim to disprove as many of them as possible.
 4. Review evidence and hypotheses to determine if you need to find more evidence to disprove any of the hypotheses.
 5. Consider how your estimate would be affected if evidence and/or findings were wrong or incorrectly interpreted.
+
+Learn more about Analysis of Competing Hypotheses: https://www.cia.gov/library/center-for-the-study-of-intelligence/csi-publications/books-and-monographs/psychology-of-intelligence-analysis/art11.html
