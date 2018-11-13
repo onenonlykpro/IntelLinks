@@ -1,4 +1,4 @@
-# Analysis of Competing Hypotheses 
+# Analysis of Competing Hypotheses (ACH)
 ## by Richards (Dick) J. Heuer, Jr.
 
 Making judgement on an issue that involves a high risk of error in reasoning?  Richards (Dick) J. Heuer, Jr.'s Analysis of Competing Hypotheses (ACH) might be useful to you.  This method consists of the following steps:
