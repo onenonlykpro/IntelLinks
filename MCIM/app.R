@@ -41,104 +41,43 @@ produce an estimate by generating final scores of each COA, which are based on t
   br(),
   
   fluidRow(
-    column(4,
-           actionButton("add_btn_screen", "Add Screening Criteria"),
-           actionButton("rm_btn_screen", "Remove Screening Criteria"),
-           textOutput("counter")),
-    column(4, 
-           actionButton("add_btn_eval", "Add Evaluation Criteria"),
-           actionButton("rm_btn_eval", "Remove Evaluation Criteria"),
-           textOutput("counter")),
-    column(4,
-           actionButton("add_btn_dec", "Add Decision"),
-           actionButton("rm_btn_dec", "Remove Decision"),
-           textOutput("counter"))),
+    column(4, wellPanel(
+      textInput("decision1", "Decision #1", value = "", width = NULL, placeholder = NULL),
+      textInput("decision2", "Decision #2", value = " ", width = NULL, placeholder = NULL),
+      textInput("decision3", "Decision #3", value = "  ", width = NULL, placeholder = NULL),
+      textInput("decision4", "Decision #4", value = "   ", width = NULL, placeholder = NULL),
+      textInput("decision5", "Decision #5", value = "    ", width = NULL, placeholder = NULL))),
+    column(4, wellPanel(
+      textInput("screening1", "Screening Criteria #1", value = "", width = NULL, placeholder = NULL),
+      textInput("screening2", "Screening Criteria #2", value = " ", width = NULL, placeholder = NULL),
+      textInput("screening3", "Screening Criteria #3", value = "  ", width = NULL, placeholder = NULL),
+      textInput("screening4", "Screening Criteria #4", value = "   ", width = NULL, placeholder = NULL),
+      textInput("screening5", "Screening Criteria #5", value = "    ", width = NULL, placeholder = NULL))),
+    column(4, wellPanel(
+      textInput("evaluation1", "Evaluation Criteria #1", value = "", width = NULL, placeholder = NULL),
+      textInput("evaluation2", "Evaluation Criteria #2", value = " ", width = NULL, placeholder = NULL),
+      textInput("evaluation3", "Evaluation Criteria #3", value = "  ", width = NULL, placeholder = NULL),
+      textInput("evaluation4", "Evaluation Criteria #4", value = "   ", width = NULL, placeholder = NULL),
+      textInput("evaluation5", "Evaluation Criteria #5", value = "    ", width = NULL, placeholder = NULL)))),
   br(),
   
-  mainPanel(uiOutput("ScreeningCriteria_ui"))
+  fluidRow(
+    column(12, dataTableOutput("MCIMTable"))
+  )
 )
 
 # Define server logic required to create table
 server <- function(input, output, session) {
-  # Track the number of input boxes to render
-  counter <- reactiveValues(n = 0)
-  
-  #Track the number of input boxes previously
-  prevcount <-reactiveValues(n = 0)
-  observeEvent(input$add_btn_screen, {
-    counter$n <- counter$n + 1
-    prevcount$n <- counter$n - 1})
-  observeEvent(input$rm_btn_screen, {
-    if (counter$n > 0) {
-      counter$n <- counter$n - 1 
-      prevcount$n <- counter$n + 1
-    }
-    
+  # Create interactive table for using decisions as row names
+  output$MCIMTable <- renderDataTable({
+    dfrows <- c(input$decision1, input$decision2, input$decision3, input$decision4, input$decision5)
+    dfcolumns <- c(input$screening1, input$screening2, input$screening3, input$screening4, input$screening5, input$evaluation1, input$evaluation2, input$evaluation3, input$evaluation4, input$evaluation5)
+    df <- as.data.frame(matrix(0, ncol = length(dfcolumns), nrow = length(dfrows)))
+    row.names(df) <- dfrows
+    colnames(df) <- dfcolumns
+    df
   })
-  observeEvent(input$add_btn_eval, {
-    counter$n <- counter$n + 1
-    prevcount$n <- counter$n - 1})
-  observeEvent(input$rm_btn_eval, {
-    if (counter$n > 0) {
-      counter$n <- counter$n - 1 
-      prevcount$n <- counter$n + 1
-    }
-    
-  })
-  observeEvent(input$add_btn_dec, {
-    counter$n <- counter$n + 1
-    prevcount$n <- counter$n - 1})
-  observeEvent(input$rm_btn_dec, {
-    if (counter$n > 0) {
-      counter$n <- counter$n - 1 
-      prevcount$n <- counter$n + 1
-    }
-    
-  })
-  output$counter <- renderPrint(print(counter$n))
-  
-  ScreeningCriterias <- reactive({
-    
-    n <- counter$n
-    
-    if (n > 0) {
-      # If the no. of ScreeningCriterias previously where more than zero, then 
-      #save the text inputs in those text boxes 
-      if(prevcount$n > 0) {
-        
-        vals = c()
-        if(prevcount$n > n) {
-          lesscnt <- n
-          isInc <- FALSE
-        } else {
-          lesscnt <- prevcount$n
-          isInc <- TRUE
-        }
-        for(i in 1:lesscnt) {
-          inpid = paste0("textin", i)
-          vals[i] = input[[inpid]] 
-        }
-        if(isInc) {
-          vals <- c(vals, "New text box")
-        }
-        
-        lapply(seq_len(n), function(i) {
-          textInput(inputId = paste0("textin", i),
-                    label = paste0("Screening Criteria ", i), value = vals[i])
-        })
-        
-      } else {
-        lapply(seq_len(n), function(i) {
-          textInput(inputId = paste0("textin", i),
-                    label = paste0("Screening Criteria ", i), value = "New text box")
-        }) 
-      }
-      
-    }
-    
-  })
-  
-  output$ScreeningCriteria_ui <- renderUI({ ScreeningCriterias() })
+  # Create interactive table for using screening criteria and evaluation criteria as column names
 }
 
 # Run the application 
