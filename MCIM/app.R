@@ -9,6 +9,7 @@
 
 library(shiny)
 library(DT)
+library(rhandsontable)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -37,30 +38,107 @@ produce an estimate by generating final scores of each COA, which are based on t
              style = "font-family: 'Source Sans Pro';"),
            p("Read more about the strengths and weaknesses of an MCIM at http://advat.blogspot.com/2015/10/multi-criteria-intelligence-matrices.html.",
              style = "font-family: 'Source Sans Pro';"))),
-  br()
-   
-  )
+  br(),
+  
+  fluidRow(
+    column(4,
+           actionButton("add_btn_screen", "Add Screening Criteria"),
+           actionButton("rm_btn_screen", "Remove Screening Criteria"),
+           textOutput("counter")),
+    column(4, 
+           actionButton("add_btn_eval", "Add Evaluation Criteria"),
+           actionButton("rm_btn_eval", "Remove Evaluation Criteria"),
+           textOutput("counter")),
+    column(4,
+           actionButton("add_btn_dec", "Add Decision"),
+           actionButton("rm_btn_dec", "Remove Decision"),
+           textOutput("counter"))),
+  br(),
+  
+  mainPanel(uiOutput("ScreeningCriteria_ui"))
+)
 
 # Define server logic required to create table
-server <- function(input, output) {
-   
-  output$RiskScorePrintout <- renderDataTable({
-    # input$userfile will be NULL initially. After the user selects and uploads a file, head of that data file by default, or all rows if selected, will be shown.
-    req(input$userfile)
-    
-    df <- read.csv(input$userfile$datapath,
-                   header = input$header,
-                   sep = input$sep,
-                   quote = input$quote)
-    
-    if(input$disp == "head") {
-      return(head(df))
-    }
-    else {
-      return(df)
+server <- function(input, output, session) {
+  # Track the number of input boxes to render
+  counter <- reactiveValues(n = 0)
+  
+  #Track the number of input boxes previously
+  prevcount <-reactiveValues(n = 0)
+  observeEvent(input$add_btn_screen, {
+    counter$n <- counter$n + 1
+    prevcount$n <- counter$n - 1})
+  observeEvent(input$rm_btn_screen, {
+    if (counter$n > 0) {
+      counter$n <- counter$n - 1 
+      prevcount$n <- counter$n + 1
     }
     
   })
+  observeEvent(input$add_btn_eval, {
+    counter$n <- counter$n + 1
+    prevcount$n <- counter$n - 1})
+  observeEvent(input$rm_btn_eval, {
+    if (counter$n > 0) {
+      counter$n <- counter$n - 1 
+      prevcount$n <- counter$n + 1
+    }
+    
+  })
+  observeEvent(input$add_btn_dec, {
+    counter$n <- counter$n + 1
+    prevcount$n <- counter$n - 1})
+  observeEvent(input$rm_btn_dec, {
+    if (counter$n > 0) {
+      counter$n <- counter$n - 1 
+      prevcount$n <- counter$n + 1
+    }
+    
+  })
+  output$counter <- renderPrint(print(counter$n))
+  
+  ScreeningCriterias <- reactive({
+    
+    n <- counter$n
+    
+    if (n > 0) {
+      # If the no. of ScreeningCriterias previously where more than zero, then 
+      #save the text inputs in those text boxes 
+      if(prevcount$n > 0) {
+        
+        vals = c()
+        if(prevcount$n > n) {
+          lesscnt <- n
+          isInc <- FALSE
+        } else {
+          lesscnt <- prevcount$n
+          isInc <- TRUE
+        }
+        for(i in 1:lesscnt) {
+          inpid = paste0("textin", i)
+          vals[i] = input[[inpid]] 
+        }
+        if(isInc) {
+          vals <- c(vals, "New text box")
+        }
+        
+        lapply(seq_len(n), function(i) {
+          textInput(inputId = paste0("textin", i),
+                    label = paste0("Screening Criteria ", i), value = vals[i])
+        })
+        
+      } else {
+        lapply(seq_len(n), function(i) {
+          textInput(inputId = paste0("textin", i),
+                    label = paste0("Screening Criteria ", i), value = "New text box")
+        }) 
+      }
+      
+    }
+    
+  })
+  
+  output$ScreeningCriteria_ui <- renderUI({ ScreeningCriterias() })
 }
 
 # Run the application 
