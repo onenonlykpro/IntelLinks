@@ -136,7 +136,6 @@ server <- function(input, output, session) {
   })
   
   # Define all outputs for UI
-  output$ACHTable <- renderTable({values$df})
   output$hypothesis1 <- renderText({ paste0("Consistency with H1: ", input$hypothesis1)})
   output$hypothesis2 <- renderText({ paste0("Consistency with H2: ", input$hypothesis2)})
   # output$hypothesis3 <- renderText({ paste0("Consistency with H3: ", input$hypothesis3)})
