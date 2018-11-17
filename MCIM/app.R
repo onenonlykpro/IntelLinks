@@ -42,42 +42,70 @@ produce an estimate by generating final scores of each COA, which are based on t
   
   fluidRow(
     column(4, wellPanel(
-      textInput("decision1", "Decision #1", value = "", width = NULL, placeholder = NULL),
-      textInput("decision2", "Decision #2", value = " ", width = NULL, placeholder = NULL),
-      textInput("decision3", "Decision #3", value = "  ", width = NULL, placeholder = NULL),
-      textInput("decision4", "Decision #4", value = "   ", width = NULL, placeholder = NULL),
-      textInput("decision5", "Decision #5", value = "    ", width = NULL, placeholder = NULL))),
+      textInput("decision1", "Decision A", value = "A: ", width = NULL, placeholder = NULL),
+      textInput("decision2", "Decision B", value = "B: ", width = NULL, placeholder = NULL),
+      textInput("decision3", "Decision C", value = "C: ", width = NULL, placeholder = NULL),
+      textInput("decision4", "Decision D", value = "D: ", width = NULL, placeholder = NULL),
+      textInput("decision5", "Decision E", value = "E: ", width = NULL, placeholder = NULL))),
     column(4, wellPanel(
-      textInput("screening1", "Screening Criteria #1", value = "", width = NULL, placeholder = NULL),
-      textInput("screening2", "Screening Criteria #2", value = " ", width = NULL, placeholder = NULL),
-      textInput("screening3", "Screening Criteria #3", value = "  ", width = NULL, placeholder = NULL),
-      textInput("screening4", "Screening Criteria #4", value = "   ", width = NULL, placeholder = NULL),
-      textInput("screening5", "Screening Criteria #5", value = "    ", width = NULL, placeholder = NULL))),
+      textInput("screening1", "Screening Criteria #1", value = "SC1: ", width = NULL, placeholder = NULL),
+      textInput("screening2", "Screening Criteria #2", value = "SC2: ", width = NULL, placeholder = NULL),
+      textInput("screening3", "Screening Criteria #3", value = "SC3: ", width = NULL, placeholder = NULL),
+      textInput("screening4", "Screening Criteria #4", value = "SC4: ", width = NULL, placeholder = NULL),
+      textInput("screening5", "Screening Criteria #5", value = "SC5: ", width = NULL, placeholder = NULL))),
     column(4, wellPanel(
-      textInput("evaluation1", "Evaluation Criteria #1", value = "", width = NULL, placeholder = NULL),
-      textInput("evaluation2", "Evaluation Criteria #2", value = " ", width = NULL, placeholder = NULL),
-      textInput("evaluation3", "Evaluation Criteria #3", value = "  ", width = NULL, placeholder = NULL),
-      textInput("evaluation4", "Evaluation Criteria #4", value = "   ", width = NULL, placeholder = NULL),
-      textInput("evaluation5", "Evaluation Criteria #5", value = "    ", width = NULL, placeholder = NULL)))),
+      textInput("evaluation1", "Evaluation Criteria #1", value = "EC1: ", width = NULL, placeholder = NULL),
+      textInput("evaluation2", "Evaluation Criteria #2", value = "EC2: ", width = NULL, placeholder = NULL),
+      textInput("evaluation3", "Evaluation Criteria #3", value = "EC3: ", width = NULL, placeholder = NULL),
+      textInput("evaluation4", "Evaluation Criteria #4", value = "EC4: ", width = NULL, placeholder = NULL),
+      textInput("evaluation5", "Evaluation Criteria #5", value = "EC5: ", width = NULL, placeholder = NULL)))),
   br(),
   
   fluidRow(
-    column(12, dataTableOutput("MCIMTable"))
+    column(12, DTOutput("MCIMTable"))
   )
 )
 
 # Define server logic required to create table
 server <- function(input, output, session) {
   # Create interactive table for using decisions as row names
-  output$MCIMTable <- renderDataTable({
-    dfrows <- c(input$decision1, input$decision2, input$decision3, input$decision4, input$decision5)
-    dfcolumns <- c(input$screening1, input$screening2, input$screening3, input$screening4, input$screening5, input$evaluation1, input$evaluation2, input$evaluation3, input$evaluation4, input$evaluation5)
-    df <- as.data.frame(matrix(0, ncol = length(dfcolumns), nrow = length(dfrows)))
-    row.names(df) <- dfrows
-    colnames(df) <- dfcolumns
-    df
-  })
+  # dfrows <- c(input$decision1, input$decision2, input$decision3, input$decision4, input$decision5)
+  # dfcolumns <- c(input$screening1, input$screening2, input$screening3, input$screening4, input$screening5, input$evaluation1, input$evaluation2, input$evaluation3, input$evaluation4, input$evaluation5)
+  df <- as.data.frame(matrix(0, ncol = 10, nrow = 5))
+  # row.names(df) <- dfrows
+  # colnames(df)   <- dfcolumns
+  
   # Create interactive table for using screening criteria and evaluation criteria as column names
+  output$MCIMTable <- renderDataTable({datatable(df, selection = "none", editable = TRUE, rownames = list(
+    list(title = paste0("A: ", input$decision1)),
+    list(title = paste0("B: ", input$decision2)),
+    list(title = paste0("C: ", input$decision3)),
+    list(title = paste0("D: ", input$decision4)),
+    list(title = paste0("E: ", input$decision5))),
+    colnames = list(
+      list(title = paste0("SC1: ", input$screening1)),
+      list(title = paste0("SC2: ", input$screening2)),
+      list(title = paste0("SC3: ", input$screening3)),
+      list(title = paste0("SC4: ", input$screening4)),
+      list(title = paste0("SC5: ", input$screening5)),
+      list(title = paste0("EC1: ", input$evaluation1)),
+      list(title = paste0("EC2: ", input$evaluation2)),
+      list(title = paste0("EC3: ", input$evaluation3)),
+      list(title = paste0("EC4: ", input$evaluation4)),
+      list(title = paste0("EC5: ", input$evaluation5)))
+    )})
+  
+  # Enable table to be editted by user
+  proxy <- dataTableProxy("MCIMTable")
+  observeEvent(input$MCIMTable_cell_edit, {
+    info <- input$MCIMTable_cell_edit
+    str(info)
+    i <- info$row
+    j <- info$col + 1  # column index offset by 1
+    v <- info$value
+    df[i, j] <<- DT::coerceValue(v, df[i, j])
+    replaceData(proxy, df, resetPaging = FALSE)
+  })
 }
 
 # Run the application 
