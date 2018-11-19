@@ -18,20 +18,20 @@ library(data.table)
 ui <- fluidPage(
   # Application title
   tags$head(tags$style(HTML("
-    .shiny-text-output {
-      background-color:#fff;
-    }"))),
+                            .shiny-text-output {
+                            background-color:#fff;
+                            }"))),
   
   h1("Analysis of Competing Hypotheses by Richards (Dick) J. Heuer, Jr.", 
      style = "font-family: 'Source Sans Pro';
-        color: #000; text-align: center;
-        padding: 20px"),
+     color: #000; text-align: center;
+     padding: 20px"),
   br(),
   
   fluidRow(
     column(12,
            p("Making judgement on an issue that involves a high risk of error in reasoning?  Richards (Dick) J. Heuer, Jr.'s
-    Analysis of Competing Hypotheses (ACH) might be useful to you.  This method consists of the following steps:",
+             Analysis of Competing Hypotheses (ACH) might be useful to you.  This method consists of the following steps:",
              style = "font-family: 'Source Sans Pro';"),
            p("1. Identify all potential hypotheses (this will discourage you from choosing one hyptohesis that you beleive is likely and using evidence to confirm it).",
              style = "font-family: 'Source Sans Pro';"),
@@ -53,7 +53,7 @@ ui <- fluidPage(
       # textInput("hypothesis4", "Hypothesis #4", value = "", width = NULL, placeholder = NULL),
       # textInput("hypothesis5", "Hypothesis #5", value = "", width = NULL, placeholder = NULL),
       # textInput("hypothesis6", "Hypothesis #6", value = "", width = NULL, placeholder = NULL)
-      )),
+    )),
     column(6, wellPanel(
       textInput("evidence", "Evidence", value = "", width = NULL, placeholder = NULL),
       textInput("source", "Source / Link", value = "", width = NULL, placeholder = NULL),
@@ -117,34 +117,31 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
-  values <- reactiveValues()
-  values$df <- data.frame(Evidence = numeric(0), 
+  userACH <- data.frame(Evidence = numeric(0), 
                           Source = numeric(0),
                           Credibility = numeric(0),
                           Relevance = numeric(0),
                           H1 = numeric(0),
                           H2 = numeric(0))
-                          # H3 = numeric(0),
-                          # H4 = numeric(0),
-                          # H5 = numeric(0),
-                          # H6 = numeric(0))
-  newEntry <- observe({
+  # H3 = numeric(0),
+  # H4 = numeric(0),
+  # H5 = numeric(0),
+  # H6 = numeric(0))
+  
+  # Add user input to ACH data frame
+  newEntry <- reactive({
     if(input$update > 0) {
-      newLine <- isolate(c(input$evidence, input$source, input$credibility, input$relevance, input$consistency1, input$consistency2))
-      isolate(values$df[nrow(values$df) + 1,] <- c(input$evidence, input$source, input$credibility, input$relevance, input$consistency1, input$consistency2))
+      newRow <- data.frame("Evidence" = input$evidence,
+                           "Source" = input$source,
+                           "Credibility" = input$credibility,
+                           "Relevance" = input$relevance,
+                           "H1" = input$consistency1,
+                           "H2" = input$consistency2)
     }
   })
-  
-  # Define all outputs for UI
-  output$hypothesis1 <- renderText({ paste0("Consistency with H1: ", input$hypothesis1)})
-  output$hypothesis2 <- renderText({ paste0("Consistency with H2: ", input$hypothesis2)})
-  # output$hypothesis3 <- renderText({ paste0("Consistency with H3: ", input$hypothesis3)})
-  # output$hypothesis4 <- renderText({ paste0("Consistency with H4: ", input$hypothesis4)})
-  # output$hypothesis5 <- renderText({ paste0("Consistency with H5: ", input$hypothesis5)})
-  # output$hypothesis6 <- renderText({ paste0("Consistency with H3: ", input$hypothesis6)})
-  
   output$ACHPrintout <- renderDataTable({
-    TestACH <- values$df
+    userACH <-rbind(userACH, newEntry())
+    TestACH <- userACH
     TestACH$CredMultiplier[TestACH$Credibility == "High"] <- 1.414
     TestACH$CredMultiplier[TestACH$Credibility == "Moderate"] <- 1.000
     TestACH$CredMultiplier[TestACH$Credibility == "Low"] <- 0.707
@@ -162,12 +159,20 @@ server <- function(input, output, session) {
     TestACH$OverallScoreH1 <- (TestACH$ConsisScoreH1 * TestACH$CredMultiplier) * TestACH$RelaMultiplier
     TestACH$OverallScoreH2 <- (TestACH$ConsisScoreH2 * TestACH$CredMultiplier) * TestACH$RelaMultiplier
     Printout <- datatable(TestACH,  colnames = c("Evidence", "Source / Link", "Credibility", "Relevance", "H1", "H2", "Credibility Multiplier", "Relevance Multipier", "H1 Consistency Score", "H2 Consistency Score", "H1 Score", "H2 Score"), 
-              options = list(columnDefs = list(list(visible = FALSE, targets = c(7,8,9,10))))) %>% formatStyle(names(TestACH), 
-                                                                                                               backgroundColor = styleEqual(c("II", "I", "N", "C", "CC"), c("red", "pink", "white", "lightgreen", "forestgreen"))
-              )
+                          options = list(columnDefs = list(list(visible = FALSE, targets = c(7,8,9,10))))) %>% formatStyle(names(TestACH), 
+                                                                                                                           backgroundColor = styleEqual(c("II", "I", "N", "C", "CC"), c("red", "pink", "white", "lightgreen", "forestgreen"))
+                          )
     Printout
   })
+  
+  # Define all outputs for UI
+  output$hypothesis1 <- renderText({ paste0("Consistency with H1: ", input$hypothesis1)})
+  output$hypothesis2 <- renderText({ paste0("Consistency with H2: ", input$hypothesis2)})
+  # output$hypothesis3 <- renderText({ paste0("Consistency with H3: ", input$hypothesis3)})
+  # output$hypothesis4 <- renderText({ paste0("Consistency with H4: ", input$hypothesis4)})
+  # output$hypothesis5 <- renderText({ paste0("Consistency with H5: ", input$hypothesis5)})
+  # output$hypothesis6 <- renderText({ paste0("Consistency with H3: ", input$hypothesis6)})
+  
 }
 # Run the application 
 shinyApp(ui = ui, server = server)
-
