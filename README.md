@@ -11,4 +11,4 @@ Go to the folder in this Github repository and download a copy of the app.R of t
 Go to your Downloads folder (or whichever directory you use to store downloaded files) and open the app.R file with RStudio.  If you computer doesn't use RStudio to open the file automatically, you can usually right-click on the app.R, select Open With..., then select RStudio.
 
 ## Click Run App
-In the top part of the RStudio interface, you should see a green Play icon button with "Run App" next to it.  Click that button, and you can use the IntelLinks application!
+In the top part of the RStudio interface, you should see a green Play icon button with "Run App" next to it.  Click that button, and you can use the Atheneos application!
