@@ -8,11 +8,10 @@
 #
 
 library(shiny)
-library(shinydashboard)
 library(condformat)
-library(rhandsontable)
 library(DT)
 library(data.table)
+library(dplyr)
 
 # Define UI for application
 ui <- fluidPage(
@@ -109,15 +108,23 @@ ui <- fluidPage(
       #                            "Inconsistent with hypothesis" = "I",
       #                            "Highly inconsistent with hypothesis" = "II"), 
       #             selected = "N"),
-      actionButton("update", "Update ACH")))),
+      actionButton("update", "Add ACH Entry")))),
   br(),
   
   fluidRow(column(12,
-                  dataTableOutput("ACHPrintout"))))
+                  dataTableOutput("ACHPrintout"))),
+  br(),
+  
+  fluidRow(column(2, textOutput("H1Total")),
+           column(2, textOutput("H2Total"))))
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
-  userACH <- data.frame(Evidence = numeric(0), 
+
+  
+  # Add user input to ACH data frame
+  values <- reactiveValues()
+  values$df <- data.frame(Evidence = numeric(0), 
                           Source = numeric(0),
                           Credibility = numeric(0),
                           Relevance = numeric(0),
@@ -127,47 +134,54 @@ server <- function(input, output, session) {
   # H4 = numeric(0),
   # H5 = numeric(0),
   # H6 = numeric(0))
-  
-  # Add user input to ACH data frame
-  newEntry <- reactive({
+  newEntry <- observe({
     if(input$update > 0) {
-      newRow <- data.frame("Evidence" = input$evidence,
-                           "Source" = input$source,
-                           "Credibility" = input$credibility,
-                           "Relevance" = input$relevance,
-                           "H1" = input$consistency1,
-                           "H2" = input$consistency2)
+      newLine <- isolate(c(input$evidence, input$source, input$credibility, input$relevance, input$consistency1, input$consistency2))
+      isolate(values$df[nrow(values$df) + 1,] <- c(input$evidence, input$source, input$credibility, input$relevance, input$consistency1, input$consistency2))
     }
   })
+  
+  calcACH <- reactive({
+    calcACH <- values$df
+    calcACH$CredMultiplier[calcACH$Credibility == "High"] <- 1.414
+    calcACH$CredMultiplier[calcACH$Credibility == "Moderate"] <- 1.000
+    calcACH$CredMultiplier[calcACH$Credibility == "Low"] <- 0.707
+    calcACH$RelaMultiplier[calcACH$Relevance == "High"] <- 1.414
+    calcACH$RelaMultiplier[calcACH$Relevance == "Moderate"] <- 1.000
+    calcACH$RelaMultiplier[calcACH$Relevance == "Low"] <- 0.707
+    calcACH$ConsisScoreH1[calcACH$H1 == "II"] <- -2
+    calcACH$ConsisScoreH1[calcACH$H1 == "I"] <- -1
+    calcACH$ConsisScoreH1[calcACH$H1 == "CC"] <- 1
+    calcACH$ConsisScoreH1[calcACH$H1 == "C" | calcACH$H.1 == "N"] <- 0
+    calcACH$ConsisScoreH2[calcACH$H2 == "II"] <- -2
+    calcACH$ConsisScoreH2[calcACH$H2 == "I"] <- -1
+    calcACH$ConsisScoreH2[calcACH$H2 == "CC"] <- 1
+    calcACH$ConsisScoreH2[calcACH$H2 == "C" | calcACH$H.2 == "N"] <- 0
+    calcACH$OverallScoreH1 <- (calcACH$ConsisScoreH1 * calcACH$CredMultiplier) * calcACH$RelaMultiplier
+    calcACH$OverallScoreH2 <- (calcACH$ConsisScoreH2 * calcACH$CredMultiplier) * calcACH$RelaMultiplier
+    calcACH
+  })
+    
+  
   output$ACHPrintout <- renderDataTable({
-    userACH <-rbind(userACH, newEntry())
-    TestACH <- userACH
-    TestACH$CredMultiplier[TestACH$Credibility == "High"] <- 1.414
-    TestACH$CredMultiplier[TestACH$Credibility == "Moderate"] <- 1.000
-    TestACH$CredMultiplier[TestACH$Credibility == "Low"] <- 0.707
-    TestACH$RelaMultiplier[TestACH$Relevance == "High"] <- 1.414
-    TestACH$RelaMultiplier[TestACH$Relevance == "Moderate"] <- 1.000
-    TestACH$RelaMultiplier[TestACH$Relevance == "Low"] <- 0.707
-    TestACH$ConsisScoreH1[TestACH$H1 == "II"] <- -2
-    TestACH$ConsisScoreH1[TestACH$H1 == "I"] <- -1
-    TestACH$ConsisScoreH1[TestACH$H1 == "CC"] <- 1
-    TestACH$ConsisScoreH1[TestACH$H1 == "C" | TestACH$H.1 == "N"] <- 0
-    TestACH$ConsisScoreH2[TestACH$H2 == "II"] <- -2
-    TestACH$ConsisScoreH2[TestACH$H2 == "I"] <- -1
-    TestACH$ConsisScoreH2[TestACH$H2 == "CC"] <- 1
-    TestACH$ConsisScoreH2[TestACH$H2 == "C" | TestACH$H.2 == "N"] <- 0
-    TestACH$OverallScoreH1 <- (TestACH$ConsisScoreH1 * TestACH$CredMultiplier) * TestACH$RelaMultiplier
-    TestACH$OverallScoreH2 <- (TestACH$ConsisScoreH2 * TestACH$CredMultiplier) * TestACH$RelaMultiplier
-    Printout <- datatable(TestACH,  colnames = c("Evidence", "Source / Link", "Credibility", "Relevance", "H1", "H2", "Credibility Multiplier", "Relevance Multipier", "H1 Consistency Score", "H2 Consistency Score", "H1 Score", "H2 Score"), 
-                          options = list(columnDefs = list(list(visible = FALSE, targets = c(7,8,9,10))))) %>% formatStyle(names(TestACH), 
+    calcACH <- calcACH()
+    datatable(calcACH, colnames = c("Evidence", "Source / Link", "Credibility", "Relevance", "H1", "H2", "Credibility Multiplier", "Relevance Multipier", "H1 Consistency Score", "H2 Consistency Score", "H1 Score", "H2 Score"), 
+                          options = list(columnDefs = list(list(visible = FALSE, targets = c(7,8,9,10))))) %>% formatStyle(names(calcACH), 
                                                                                                                            backgroundColor = styleEqual(c("II", "I", "N", "C", "CC"), c("red", "pink", "white", "lightgreen", "forestgreen"))
                           )
-    Printout
   })
   
   # Define all outputs for UI
   output$hypothesis1 <- renderText({ paste0("Consistency with H1: ", input$hypothesis1)})
+  output$H1Total <- renderText({
+    calcACH <- calcACH()
+    paste0("ACH Score of H1: '", input$hypothesis1, "' is ", sum(calcACH$OverallScoreH1, na.rm = TRUE))
+  })
   output$hypothesis2 <- renderText({ paste0("Consistency with H2: ", input$hypothesis2)})
+  output$H2Total <- renderText({
+    calcACH <- calcACH()
+    paste0("ACH Score of H2: '", input$hypothesis2, "' is ", sum(calcACH$OverallScoreH2, na.rm = TRUE))
+  })
   # output$hypothesis3 <- renderText({ paste0("Consistency with H3: ", input$hypothesis3)})
   # output$hypothesis4 <- renderText({ paste0("Consistency with H4: ", input$hypothesis4)})
   # output$hypothesis5 <- renderText({ paste0("Consistency with H5: ", input$hypothesis5)})
