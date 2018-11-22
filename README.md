@@ -1,4 +1,4 @@
-# IntelLinks
+# Atheneos
 Useful applications for intelligence methods and data analysis.  To run any of the applications, please follow the steps below.
 
 ## Download RStudio
