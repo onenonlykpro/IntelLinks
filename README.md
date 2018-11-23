@@ -1,5 +1,7 @@
 # Atheneos
-Useful applications for intelligence methods and data analysis.  To run any of the applications, please follow the steps below.
+Useful applications for intelligence methods and data analysis. This product is named after Athena, the Greek goddness of wisdom, law and justice, strategic warfare, mathematics, strength, strategy, crafts, and skill.
+
+To run any of the applications, please follow the steps below.
 
 ## Download RStudio
 Visit https://www.rstudio.com/products/rstudio/download/#download and download the RStudio installer for your preferred operating system.
