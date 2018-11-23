@@ -14,3 +14,7 @@ Go to your Downloads folder (or whichever directory you use to store downloaded 
 
 ## Click Run App
 In the top part of the RStudio interface, you should see a green Play icon button with "Run App" next to it.  Click that button, and you can use the Atheneos application!
+
+
+
+Twitter: [@TheRealAtheneos](https://twitter.com/TheRealAtheneos)
