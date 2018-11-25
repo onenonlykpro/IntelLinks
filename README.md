@@ -1,5 +1,5 @@
 # Atheneos
-Useful applications for intelligence methods and data analysis. This product is named after Athena, the Greek goddness of wisdom, law and justice, strategic warfare, mathematics, strength, strategy, crafts, and skill.
+Useful applications for intelligence methods and data analysis. This product is named after Athena, the Greek goddess of wisdom, law and justice, strategic warfare, mathematics, strength, strategy, crafts, and skill.
 
 To run any of the applications, please follow the steps below.
 
