@@ -7,11 +7,11 @@
 #    http://shiny.rstudio.com/
 #
 
-library(shiny)
-library(condformat)
-library(DT)
-library(data.table)
-library(dplyr)
+require(shiny)
+require(condformat)
+require(DT)
+require(data.table)
+require(dplyr)
 
 # Define UI for application
 ui <- fluidPage(
