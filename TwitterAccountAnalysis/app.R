@@ -7,26 +7,26 @@
 #    http://shiny.rstudio.com/
 #
 
-library(shiny)
-library(plotly)
-library(twitteR)
-library(ROAuth)
-library(ggplot2)
-library(httr)
-library(rjson)
-library(tm)
-library(gridExtra)
-library(SnowballC)
-library(wordcloud)
-library(wordcloud2)
-library(RColorBrewer)
-library(topicmodels)
-library(data.table)
-library(dplyr)
-library(ngram)
-library(RWeka)
-library(Rmpfr)
-library(Rgraphviz)
+require(shiny)
+require(plotly)
+require(twitteR)
+require(ROAuth)
+require(ggplot2)
+require(httr)
+require(rjson)
+require(tm)
+require(gridExtra)
+require(SnowballC)
+require(wordcloud)
+require(wordcloud2)
+require(RColorBrewer)
+require(topicmodels)
+require(data.table)
+require(dplyr)
+require(ngram)
+require(RWeka)
+require(Rmpfr)
+require(Rgraphviz)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -96,9 +96,6 @@ ui <- fluidPage(
                      tags$div("Loading...",id="loadmessage")),
     #side panel 1
     conditionalPanel(condition="input.tabselected==1",
-                     helpText("This app uses a simplified model of text representation where word order 
-                              and grammar are ignored but frequency is not, effectively treating the corpus 
-                              like a bag of all of its words together."),
                      textInput(inputId = "user",
                                label = "Twitter User or Hashtag:"),
                      radioButtons("type", "Search type:",
@@ -196,10 +193,6 @@ server <- function(input, output) {
    targetAccount <- renderText({paste0("'", input$twitter_name, "'")})
    user <- reactive({targetAccount()})
    
-   pullTwitter <- observe({
-     if(input$submit == 1) {
-       setup_twitter_oauth(consumerKey, consumerSecret, accessToken, accessSecret)}
-   })
    #input update - user
    observeEvent(input$newUser, handlerExpr = {
      user <- sample(users, size = 1, replace = F)
@@ -216,10 +209,10 @@ server <- function(input, output) {
    
    observeEvent(input$update, once = T, handlerExpr = {
      #api validation at beginning of session
-     api_key <- "your_api_key"
-     api_secret <- "your_api_secret"
-     access_token <- "your_access_token"
-     access_token_secret <- "your_token_secret"
+     api_key <- consumerKey
+     api_secret <- consumerSecret
+     access_token <- accessToken
+     access_token_secret <- accessSecret
      setup_twitter_oauth(api_key,api_secret,access_token,access_token_secret)
      
      twitteR:::setup_twitter_oauth(api_key,api_secret,access_token,access_token_secret)
