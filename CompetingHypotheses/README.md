@@ -9,3 +9,5 @@ Making judgement on an issue that involves a high risk of error in reasoning?  R
 5. Consider how your estimate would be affected if evidence and/or findings were wrong or incorrectly interpreted.
 
 Learn more about Analysis of Competing Hypotheses: https://www.cia.gov/library/center-for-the-study-of-intelligence/csi-publications/books-and-monographs/psychology-of-intelligence-analysis/art11.html
+
+Online version of this tool available at https://atheneos.shinyapps.io/analysis_of_competing_hypotheses/
