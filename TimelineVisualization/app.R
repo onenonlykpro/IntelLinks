@@ -19,30 +19,9 @@ dataBasic <- data.frame(
 
 
 # Template for world cup HTML of each item
-templateWC <- function(stage, team1, team2, score1, score2) {
-  sprintf(
-    '<table><tbody>
-      <tr><td colspan="3"><em>%s</em></td></tr>
-      <tr>
-        <td>%s</td>
-        <th>&nbsp;%s - %s&nbsp;</th>
-        <td>%s</td>
-      </tr>
-      <tr>
-        <td><img src="flags/%s.png" width="31" height="20" alt="%s"></td>
-        <th></th>
-        <td><img src="flags/%s.png" width="31" height="20" alt="%s"></td>
-      </tr>
-    </tbody></table>',
-    stage, team1, score1, score2, team2, gsub("\\s", "", tolower(team1)),
-    team1, gsub("\\s", "", tolower(team2)), team2
-  )
-}
-
 prettyDate <- function(d) {
   suppressWarnings(format(as.POSIXct(gsub("T", " ", d), "%Y-%m-%d %H:%M")))
 }
-
 randomID <- function() {
   paste(sample(c(letters, LETTERS, 0:9), 16, replace = TRUE), collapse = "")
 }
@@ -50,41 +29,53 @@ randomID <- function() {
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
+  # Application title
+  tags$head(tags$style(HTML("
+                            .shiny-text-output {
+                            background-color:#fff;
+                            }"))),
+  
+  h1("Event and Timeline Analysis", 
+     style = "font-family: 'Source Sans Pro';
+     color: #000; text-align: center;
+     padding: 20px"),
+
+  fluidRow(
+    column(12,
+           p("Event and timeline (E&T) analysis displays events sequentially in a visual manner. Successful application of this 
+technique can uncover important trends about a firm’s competitive strategy, an adversary's M.O., and serve as an early-warning 
+system by highlighting when an external force takes an action that is unique from its usual or expected behavior.  This method 
+is also useful for scenarios in which there are a series of complicated events, which can overwhelm and analyst 
+             or decision maker.",
+             style = "font-family: 'Source Sans Pro';"),
+           p("The code of the app is created (mostly) by Dean Attali.  Be sure to support him by starring his repositories at 
+             https://github.com/daattali.",
+             style = "font-family: 'Source Sans Pro';"))),
+  br(),
    
-   # Application title
-   titlePanel("Timeline Analysis by Dean Attali"),
+   fluidRow(column(9,
+                   timevisOutput("timelineInteractive")),
+            column(3, wellPanel(
+              div(id = "interactiveActions",
+                  class = "optionsSection",
+                  tags$h4("Actions:"),
+                  actionButton("fit", "Fit all items"),
+                  actionButton("setWindowNoAnim", "Set window without animation"),
+                  actionButton("focusSelection", "Focus current selection"))))),
    br(),
    
-   fluidRow(column(12,
-                   timevisOutput("timelineInteractive"))),
-   br(),
-   
-   fluidRow(column(12, wellPanel(
-     div(id = "interactiveActions",
-         class = "optionsSection",
-         tags$h4("Actions:"),
-         actionButton("fit", "Fit all items"),
-         actionButton("setWindowAnim", "Set window 2016-01-07 to 2016-01-25"),
-         actionButton("setWindowNoAnim", "Set window without animation"),
-         actionButton("center", "Center around 2016-01-23"),
-         actionButton("focusSelection", "Focus current selection"),
-         actionButton("addTime", "Add a draggable vertical bar 2016-01-17"))))),
-   fluidRow(column(8,
-       fluidRow(column(4,
-           div(class = "optionsSection",
-               uiOutput("selectIdsOutput", inline = TRUE),
-               actionButton("selectItems", "Select"),
-               checkboxInput("selectFocus", "Focus on selection", FALSE))),
-           column(4,
-                  div(class = "optionsSection",
-                      textInput("addText", tags$h4("Add item:"), "New item"),
-                      dateInput("addDate", NULL, "2016-01-15"),
-                      actionButton("addBtn", "Add"))),
-           column(4,
-                  div(class = "optionsSection",
-                      uiOutput("removeIdsOutput", inline = TRUE),
-                      actionButton("removeItem", "Remove"))))),
-       column(4,
+   fluidRow(column(4,wellPanel(div(class = "optionsSection",
+                                   uiOutput("selectIdsOutput", inline = TRUE),
+                                   actionButton("selectItems", "Select"),
+                                   checkboxInput("selectFocus", "Focus on selection", FALSE)))),
+           column(4,wellPanel(div(class = "optionsSection",
+                                  textInput("addText", tags$h4("Add item:"), "New item"),
+                                  dateInput("addDate", NULL, "2016-01-15"),
+                                  actionButton("addBtn", "Add")))),
+           column(4,wellPanel(div(class = "optionsSection",
+                                  uiOutput("removeIdsOutput", inline = TRUE),
+                                  actionButton("removeItem", "Remove"))))),
+  fluidRow(column(12,
               div(id = "timelinedata",
                   class = "optionsSection",
                   tags$h4("Data:"),
@@ -93,10 +84,7 @@ ui <- fluidPage(
                   div(tags$strong("Visible window:"),
                       textOutput("window", inline = TRUE)),
                   div(tags$strong("Selected items:"),
-                      textOutput("selected", inline = TRUE))))),
-   div(class = "sourcecode",
-       "The code of the app is created (mostly) by Dean Attali.  Be sure to support him by starring his repositories ",
-       tags$a(href = "https://github.com/daattali", "on GitHub")))
+                      textOutput("selected", inline = TRUE))))))
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
@@ -135,15 +123,9 @@ server <- function(input, output) {
   observeEvent(input$fit, {
     fitWindow("timelineInteractive")})
   
-  observeEvent(input$setWindowAnim, {
-    setWindow("timelineInteractive", "2016-01-07", "2016-01-25")})
-  
   observeEvent(input$setWindowNoAnim, {
     setWindow("timelineInteractive", "2016-01-07", "2016-01-25",
               options = list(animation = FALSE))})
-  
-  observeEvent(input$center, {
-    centerTime("timelineInteractive", "2016-01-23")})
   
   observeEvent(input$focusSelection, {
     centerItem("timelineInteractive", input$timelineInteractive_selected)})
@@ -160,9 +142,6 @@ server <- function(input, output) {
   
   observeEvent(input$removeItem, {
     removeItem("timelineInteractive", input$removeIds)})
-  
-  observeEvent(input$addTime, {
-    addCustomTime("timelineInteractive", "2016-01-17", randomID())})
   
 }
 
