@@ -7,9 +7,9 @@
 #    http://shiny.rstudio.com/
 #
 
-require(shiny)
-require(plotly)
-require(ggplot2)
+require("shiny")
+require("plotly")
+require("ggplot2")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -30,7 +30,7 @@ ui <- fluidPage(
     column(12,
            p("Douglas Hubbard's very simple but incredibly useful Monte Carlo needs three parameters: 
 the maximum, the minimum, and the average of the observations you currently have.  
-This tool will also calculate risk based on you risk boundary (the point at an outcome can be determined a loss).  
+This tool will also calculate risk based on your risk boundary (the point at an outcome can be determined a loss).  
              The simulation results will update as you submit new parameters.", 
              style = "font-family: 'Source Sans Pro';")
     )
