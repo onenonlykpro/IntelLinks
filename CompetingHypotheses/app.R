@@ -7,11 +7,11 @@
 #    http://shiny.rstudio.com/
 #
 
-require(shiny)
-require(condformat)
-require(DT)
-require(data.table)
-require(dplyr)
+require("shiny")
+require("condformat")
+require("DT")
+require("data.table")
+require("dplyr")
 
 # Define UI for application
 ui <- fluidPage(
@@ -29,7 +29,7 @@ ui <- fluidPage(
   
   fluidRow(
     column(12,
-           p("Making judgement on an issue that involves a high risk of error in reasoning?  Richards (Dick) J. Heuer, Jr.'s
+           p("Making judgments  on an issue that involves a high risk of error in reasoning?  Richards (Dick) J. Heuer, Jr.'s
              Analysis of Competing Hypotheses (ACH) might be useful to you.  This method consists of the following steps:",
              style = "font-family: 'Source Sans Pro';"),
            p("1. Identify all potential hypotheses (this will discourage you from choosing one hyptohesis that you beleive is likely and using evidence to confirm it).",
