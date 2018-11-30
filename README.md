@@ -6,8 +6,8 @@ To run any of the applications, please follow the steps below.
 ### 1) Download RStudio
 Visit https://www.rstudio.com/products/rstudio/download/#download and download the RStudio installer for your preferred operating system.
 
-### 2) Download the Application
-Go to the folder in this Github repository and download a copy of the app.R of the application you need.
+### 2) Download Repository
+Download this repostiory (the green button above).
 
 ### 3) Open the application with RStudio
 Go to your Downloads folder (or whichever directory you use to store downloaded files) and open the app.R file with RStudio.  If you computer doesn't use RStudio to open the file automatically, you can usually right-click on the app.R, select Open With..., then select RStudio.
