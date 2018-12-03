@@ -13,6 +13,7 @@ require("readr")
 require("condformat")
 require("DT")
 require("data.table")
+require("RColorBrewer")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -54,12 +55,6 @@ ui <- fluidPage(
       checkboxInput("header", "Headers / Column names are in the first row", TRUE)
     ))),
   
-  # Show a plot of the generated distribution
-  fluidRow(column(12,
-                  dataTableOutput("edgeList"))
-           ),
-  br(),
-  
   fluidRow(column(3,
                   wellPanel(
                     checkboxInput("directed", "Is this a directed social network (node1 is the source, node2 is the target).", FALSE),
@@ -75,18 +70,13 @@ ui <- fluidPage(
   ),
   
   fluidRow(column(12,
-                  tableOutput("measuredNetwork")))
+                  dataTableOutput("measuredNetwork")))
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
    
   edgelist <- reactive({
-    # input$file1 will be NULL initially. After the user selects
-    # and uploads a file, it will be a data frame with 'name',
-    # 'size', 'type', and 'datapath' columns. The 'datapath'
-    # column will contain the local filenames where the data can
-    # be found.
     inFile <- input$file1
     if (is.null(inFile))
       return(NULL)
@@ -102,6 +92,7 @@ server <- function(input, output) {
     names(nodelist1) <- names(nodelist2)
     nodelist <- rbind(nodelist1, nodelist2)
     nodelist <- unique(nodelist)
+    names(nodelist) <- "node"
     nodelist
   })
   
@@ -115,24 +106,26 @@ server <- function(input, output) {
     network
   })
   
-  # Calculate centrality measures
-  measuredNetwork <- reactive({
+  # Print conditionally formatted table showing centrality measures
+  output$measuredNetwork <- renderDataTable({
     network <- network()
-    network$degrees <- degree(network, mode = "all")
-    network$closeness <- closeness(network, mode = "all", weights = NA, normalized = TRUE)
-    network$betweenness <- betweenness(network, directed = input$directed, weights = NA, normalized = TRUE)
-    network
+    degrees <- as.data.frame(degree(network, mode = "all"))
+    names(degrees) <- "degrees"
+    closeness <- as.data.frame(closeness(network, mode = "all", weights = NA, normalized = TRUE))
+    names(closeness) <- "closeness"
+    betweennessCentrality <- as.data.frame(betweenness(network, directed = input$directed, weights = NA, normalized = TRUE))
+    names(betweennessCentrality) <- "betweenness"
+    eigenvector <- as.data.frame(evcent(network, directed = input$directed, scale = TRUE, weights = NULL))
+    eigenvector <- eigenvector$vector
+    names(eigenvector) <- "eigenvector"
+    measuredNetwork <- cbind(nodelist, degrees, closeness, betweennessCentrality, eigenvector) ## BUG!!
+    datatable(measuredNetwork)
   })
   
   # Print edge list for user's verification
   output$edgeList <- renderDataTable({
     edgelist <- edgelist()
     datatable(edgelist)
-  })
-  
-  # Test
-  output$layout <- renderText({
-    input$layoutChoice
   })
   
   # Print SNA graph
