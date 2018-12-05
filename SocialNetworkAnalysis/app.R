@@ -10,10 +10,8 @@
 require("shiny")
 require("igraph")
 require("readr")
-require("condformat")
 require("DT")
 require("data.table")
-require("RColorBrewer")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -40,7 +38,8 @@ ui <- fluidPage(
              template from https://github.com/onenonlykpro/Atheneos/blob/master/SocialNetworkAnalysis/Template.csv.  If you only want a demo of this tool, you can download and use a dataset of Game of Thrones families 
              produced by Shirin Glander (support her by starring her repository at https://github.com/ShirinG).",
              style = "font-family: 'Source Sans Pro';"),
-           p("2. Upload your .csv file and confirm your data was uploaded correctly."))),
+           p("2. Upload your .csv file and confirm your data was uploaded correctly.",
+             style = "font-family: 'Source Sans Pro';"))),
   br(),
   
   # Social network analysis setup
