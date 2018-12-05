@@ -37,7 +37,7 @@ ui <- fluidPage(
              simple social network analysis.",
              style = "font-family: 'Source Sans Pro';"),
            p("1. In a spreadsheet, create a list of ties (i.e. edges or links) of the organization or social structure you wish to analyze.  You may download a 
-             template from [INSERT LINK TO SNA TEMPLATE].  If you only want a demo of this tool, you can download and use a dataset of Game of Thrones families 
+             template from https://github.com/onenonlykpro/Atheneos/blob/master/SocialNetworkAnalysis/Template.csv.  If you only want a demo of this tool, you can download and use a dataset of Game of Thrones families 
              produced by Shirin Glander (support her by starring her repository at https://github.com/ShirinG).",
              style = "font-family: 'Source Sans Pro';"),
            p("2. Upload your .csv file and confirm your data was uploaded correctly."))),
