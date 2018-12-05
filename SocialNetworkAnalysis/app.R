@@ -109,6 +109,7 @@ server <- function(input, output) {
   # Print conditionally formatted table showing centrality measures
   output$measuredNetwork <- renderDataTable({
     network <- network()
+    nodelist <- nodelist()
     degrees <- as.data.frame(degree(network, mode = "all"))
     names(degrees) <- "degrees"
     closeness <- as.data.frame(closeness(network, mode = "all", weights = NA, normalized = TRUE))
