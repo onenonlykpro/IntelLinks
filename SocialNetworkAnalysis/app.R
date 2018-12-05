@@ -64,7 +64,12 @@ ui <- fluidPage(
                                   "Star" = "layout_as_star",
                                   "Tree" = "layout_as_tree",
                                   "Grid" = "layout_on_grid",
-                                  "Force-directed" = "layout_with_fr")))),
+                                  "Force-directed" = "layout_with_fr")),
+                    radioButtons("colorChoice", "Select a measure to color nodes by:",
+                                 c("Degrees" = "measuredNetwork$degrees",
+                                   "Closeness" = "measuredNetwork$closeness",
+                                   "Betweenness" = "measuredNetwork$betweenness",
+                                   "Eigenvector" = "measuredNetwork$eigenvector")))),
     column(9,
            plotOutput("snaGraph"))
   ),
@@ -106,8 +111,8 @@ server <- function(input, output) {
     network
   })
   
-  # Print table showing centrality measures
-  output$measuredNetwork <- renderDataTable({
+  # Create data frame of centrality measures
+  measuredNetwork <- reactive({
     network <- network()
     nodelist <- nodelist()
     degrees <- as.data.frame(degree(network, mode = "all"))
@@ -120,40 +125,58 @@ server <- function(input, output) {
     eigenvector <- eigenvector$vector
     names(eigenvector) <- "eigenvector"
     measuredNetwork <- cbind(nodelist, degrees, closeness, betweennessCentrality, eigenvector)
-    datatable(measuredNetwork)
+    measuredNetwork
   })
   
-  # Print edge list for user's verification
-  output$edgeList <- renderDataTable({
-    edgelist <- edgelist()
-    datatable(edgelist)
+  # Print table of centrality measures
+  output$measuredNetwork <- renderDataTable({
+    measuredNetwork <- measuredNetwork()
+    datatable(measuredNetwork)
   })
   
   # Print SNA graph
   output$snaGraph <- renderPlot({
     network <- network()
-    layoutChoice <- input$layoutChoice
+    ## Set layout from user choice
     par(mar=c(0,0,0,0))
     if (input$layoutChoice == "layout_randomly") {
-      layoutChoice = layout_randomly
+      layoutChoice <- layout_randomly
     } else if (input$layoutChoice == "layout_in_circle") {
-      layoutChoice = layout_in_circle
+      layoutChoice <- layout_in_circle
     } else if (input$layoutChoice == "layout_as_star") {
-      layoutChoice = layout_as_star
+      layoutChoice <- layout_as_star
     } else if (input$layoutChoice == "layout_as_tree") {
-      layoutChoice = layout_as_tree
+      layoutChoice <- layout_as_tree
     } else if (input$layoutChoice == "layout_on_grid") {
-      layoutChoice = layout_on_grid
+      layoutChoice <- layout_on_grid
     } else {
-      layoutChoice = layout_with_fr
+      layoutChoice <- layout_with_fr
     }
+    
+    ## Set heatmap coloring on user input
+    measuredNetwork <- measuredNetwork()
+    if (input$colorChoice == "measuredNetwork$degrees") {
+      colorChoice <- measuredNetwork$degrees
+    } else if (input$colorChoice == "measuredNetwork$closeness") {
+      colorChoice <- measuredNetwork$closeness
+    } else if (input$colorChoice == "measuredNetwork$betweenness") {
+      colorChoice <- measuredNetwork$betweenness
+    } else if (input$colorChoice == "measuredNetwork$eigenvector") {
+      colorChoice <- measuredNetwork$eigenvector
+    }
+    oranges <- colorRampPalette(c("lightgray", "dark red"))
+    col <- oranges(max(colorChoice) * 5)
+    col <- col[colorChoice * 5]
+    
+    ## Print graph
     snaGraph <- plot(network,
-         vertex.color = "lightblue", 
-         vertex.label.color = "black", 
-         vertex.label.cex = .75,
-         edge.curved = .25, 
-         edge.color = "grey20",
-         layout = layoutChoice)
+                     vertex.size = 5.0,
+                     vertex.color = col,
+                     vertex.label.color = "black",
+                     vertex.label.cex = .75,
+                     edge.curved = .25,
+                     edge.color = "grey20",
+                     layout = layoutChoice)
   })
 
 }
