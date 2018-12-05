@@ -106,7 +106,7 @@ server <- function(input, output) {
     network
   })
   
-  # Print conditionally formatted table showing centrality measures
+  # Print table showing centrality measures
   output$measuredNetwork <- renderDataTable({
     network <- network()
     nodelist <- nodelist()
@@ -119,7 +119,7 @@ server <- function(input, output) {
     eigenvector <- as.data.frame(evcent(network, directed = input$directed, scale = TRUE, weights = NULL))
     eigenvector <- eigenvector$vector
     names(eigenvector) <- "eigenvector"
-    measuredNetwork <- cbind(nodelist, degrees, closeness, betweennessCentrality, eigenvector) ## BUG!!
+    measuredNetwork <- cbind(nodelist, degrees, closeness, betweennessCentrality, eigenvector)
     datatable(measuredNetwork)
   })
   
