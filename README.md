@@ -10,7 +10,7 @@ Visit https://www.rstudio.com/products/rstudio/download/#download and download t
 Download this repostiory (the green button above).
 
 ### 3) Open the application with RStudio
-Go to your Downloads folder (or whichever directory you use to store downloaded files) and open the app.R file with RStudio.  If you computer doesn't use RStudio to open the file automatically, you can usually right-click on the app.R, select Open With..., then select RStudio.
+Go to your Downloads folder (or whichever directory you use to store downloaded files) and open the app.R file of the method you would like to use with RStudio.  If you computer doesn't use RStudio to open the file automatically, you can usually right-click on the app.R, select Open With..., then select RStudio.
 
 ### 4) Click Run App
 In the top part of the RStudio interface, you should see a green Play icon button with "Run App" next to it.  Click that button, and you can use the Atheneos application!
