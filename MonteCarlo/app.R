@@ -15,26 +15,26 @@ require("ggplot2")
 ui <- fluidPage(
   # Application title
   tags$head(tags$style(HTML("
-    .shiny-text-output {
-      background-color:#fff;
-    }
-  "))),
+                            .shiny-text-output {
+                            background-color:#fff;
+                            }
+                            "))),
   
   h1("Simple Monte Carlo by Douglas Hubbard", 
      style = "font-family: 'Source Sans Pro';
-        color: #000; text-align: center;
-        padding: 20px"),
+     color: #000; text-align: center;
+     padding: 20px"),
   br(),
   
   fluidRow(
     column(12,
            p("Douglas Hubbard's very simple but incredibly useful Monte Carlo needs three parameters: 
-the maximum, the minimum, and the average of the observations you currently have.  
-This tool will also calculate risk based on your risk boundary (the point at an outcome can be determined a loss).  
+             the maximum, the minimum, and the average of the observations you currently have.  
+             This tool will also calculate risk based on your risk boundary (the point at an outcome can be determined a loss).  
              The simulation results will update as you submit new parameters.", 
              style = "font-family: 'Source Sans Pro';")
     )
-  ),
+    ),
   
   br(),
   
@@ -43,6 +43,7 @@ This tool will also calculate risk based on your risk boundary (the point at an 
       numericInput("maximum", "Maximum:", value = 2),
       numericInput("average", "Average:", value = 1),
       numericInput("minimum", "Minimum:", value = 0),
+      checkboxInput("negativeAllowed", "Are negative values possible in the outcome you're simulating?", TRUE),
       numericInput("confidence", "Confidence Level:", value = 90),
       numericInput("trials", "Trials:", value = 10000),
       numericInput("riskBoundary", "Risk Boundary:", value = 0),
@@ -52,7 +53,7 @@ This tool will also calculate risk based on your risk boundary (the point at an 
            plotOutput("monteCarloPlot")
     )
   )
-)
+    )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
@@ -68,9 +69,13 @@ server <- function(input, output) {
       MCTable[i,1] <- qnorm(runif(1), input$average, (input$maximum - input$minimum)/zscore)
       i <- i + 1 
     }
+    # Adjust is negative values aren't possible
+    if (input$negativeAllowed == FALSE) {
+      MCTable$results <- ifelse(MCTable$results < 0, 0, MCTable$results)
+    }
     # Draw histogram
     MCHistogram <- ggplot(data = MCTable, 
-           aes(MCTable$results)) + 
+                          aes(MCTable$results)) + 
       geom_histogram(col = "black",
                      fill = "forestgreen",
                      alpha = .8) +
@@ -91,4 +96,3 @@ server <- function(input, output) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
