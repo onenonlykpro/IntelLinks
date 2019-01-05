@@ -47,9 +47,9 @@ ui <- fluidPage(
   fluidRow(
     column(6, wellPanel(
       textInput("hypothesis1", "Hypothesis #1", value = "", width = NULL, placeholder = NULL),
-      textInput("hypothesis2", "Hypothesis #2", value = "", width = NULL, placeholder = NULL)
-      # textInput("hypothesis3", "Hypothesis #3", value = "", width = NULL, placeholder = NULL),
-      # textInput("hypothesis4", "Hypothesis #4", value = "", width = NULL, placeholder = NULL),
+      textInput("hypothesis2", "Hypothesis #2", value = "", width = NULL, placeholder = NULL),
+      textInput("hypothesis3", "Hypothesis #3", value = "", width = NULL, placeholder = NULL),
+      textInput("hypothesis4", "Hypothesis #4", value = "", width = NULL, placeholder = NULL)
       # textInput("hypothesis5", "Hypothesis #5", value = "", width = NULL, placeholder = NULL),
       # textInput("hypothesis6", "Hypothesis #6", value = "", width = NULL, placeholder = NULL)
     )),
@@ -80,20 +80,20 @@ ui <- fluidPage(
                                  "Inconsistent with hypothesis" = "I",
                                  "Highly inconsistent with hypothesis" = "II"), 
                   selected = "N"),
-      # selectInput("consistency3", textOutput("hypothesis3"), 
-      #             choices = list("Not Applicable or Neutral" = "N", 
-      #                            "Highly consistent with hypothesis" = "CC",
-      #                            "Consistent with hypothesis" = "C",
-      #                            "Inconsistent with hypothesis" = "I",
-      #                            "Highly inconsistent with hypothesis" = "II"), 
-      #             selected = "N"),
-      # selectInput("consistency4", textOutput("hypothesis4"), 
-      #             choices = list("Not Applicable or Neutral" = "N", 
-      #                            "Highly consistent with hypothesis" = "CC",
-      #                            "Consistent with hypothesis" = "C",
-      #                            "Inconsistent with hypothesis" = "I",
-      #                            "Highly inconsistent with hypothesis" = "II"), 
-      #             selected = "N"),
+      selectInput("consistency3", textOutput("hypothesis3"), 
+                 choices = list("Not Applicable or Neutral" = "N", 
+                                "Highly consistent with hypothesis" = "CC",
+                                "Consistent with hypothesis" = "C",
+                                "Inconsistent with hypothesis" = "I",
+                               "Highly inconsistent with hypothesis" = "II"), 
+                 selected = "N"),
+      selectInput("consistency4", textOutput("hypothesis4"),
+                  choices = list("Not Applicable or Neutral" = "N",
+                                 "Highly consistent with hypothesis" = "CC",
+                                 "Consistent with hypothesis" = "C",
+                                 "Inconsistent with hypothesis" = "I",
+                                 "Highly inconsistent with hypothesis" = "II"),
+                  selected = "N"),
       # selectInput("consistency5", textOutput("hypothesis5"), 
       #             choices = list("Not Applicable or Neutral" = "N", 
       #                            "Highly consistent with hypothesis" = "CC",
@@ -116,7 +116,10 @@ ui <- fluidPage(
   br(),
   
   fluidRow(column(2, textOutput("H1Total")),
-           column(2, textOutput("H2Total"))))
+           column(2, textOutput("H2Total")),
+           column(2, textOutput("H3Total")),
+           column(2, textOutput("H4Total"))),
+  br())
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
@@ -129,15 +132,15 @@ server <- function(input, output, session) {
                           Credibility = numeric(0),
                           Relevance = numeric(0),
                           H1 = numeric(0),
-                          H2 = numeric(0))
-  # H3 = numeric(0),
-  # H4 = numeric(0),
+                          H2 = numeric(0),
+                          H3 = numeric(0),
+                          H4 = numeric(0))
   # H5 = numeric(0),
   # H6 = numeric(0))
   newEntry <- observe({
     if(input$update > 0) {
-      newLine <- isolate(c(input$evidence, input$source, input$credibility, input$relevance, input$consistency1, input$consistency2))
-      isolate(values$df[nrow(values$df) + 1,] <- c(input$evidence, input$source, input$credibility, input$relevance, input$consistency1, input$consistency2))
+      newLine <- isolate(c(input$evidence, input$source, input$credibility, input$relevance, input$consistency1, input$consistency2, input$consistency3, input$consistency4))
+      isolate(values$df[nrow(values$df) + 1,] <- c(input$evidence, input$source, input$credibility, input$relevance, input$consistency1, input$consistency2, input$consistency3, input$consistency4))
     }
   })
   
@@ -157,16 +160,26 @@ server <- function(input, output, session) {
     calcACH$ConsisScoreH2[calcACH$H2 == "I"] <- -1
     calcACH$ConsisScoreH2[calcACH$H2 == "CC"] <- 1
     calcACH$ConsisScoreH2[calcACH$H2 == "C" | calcACH$H.2 == "N"] <- 0
+    calcACH$ConsisScoreH3[calcACH$H3 == "II"] <- -2
+    calcACH$ConsisScoreH3[calcACH$H3 == "I"] <- -1
+    calcACH$ConsisScoreH3[calcACH$H3 == "CC"] <- 1
+    calcACH$ConsisScoreH3[calcACH$H3 == "C" | calcACH$H.3 == "N"] <- 0
+    calcACH$ConsisScoreH4[calcACH$H4 == "II"] <- -2
+    calcACH$ConsisScoreH4[calcACH$H4 == "I"] <- -1
+    calcACH$ConsisScoreH4[calcACH$H4 == "CC"] <- 1
+    calcACH$ConsisScoreH4[calcACH$H4 == "C" | calcACH$H.4 == "N"] <- 0
     calcACH$OverallScoreH1 <- (calcACH$ConsisScoreH1 * calcACH$CredMultiplier) * calcACH$RelaMultiplier
     calcACH$OverallScoreH2 <- (calcACH$ConsisScoreH2 * calcACH$CredMultiplier) * calcACH$RelaMultiplier
+    calcACH$OverallScoreH3 <- (calcACH$ConsisScoreH3 * calcACH$CredMultiplier) * calcACH$RelaMultiplier
+    calcACH$OverallScoreH4 <- (calcACH$ConsisScoreH4 * calcACH$CredMultiplier) * calcACH$RelaMultiplier
     calcACH
   })
     
   
   output$ACHPrintout <- renderDataTable({
     calcACH <- calcACH()
-    datatable(calcACH, colnames = c("Evidence", "Source / Link", "Credibility", "Relevance", "H1", "H2", "Credibility Multiplier", "Relevance Multipier", "H1 Consistency Score", "H2 Consistency Score", "H1 Score", "H2 Score"), 
-                          options = list(columnDefs = list(list(visible = FALSE, targets = c(7,8,9,10))))) %>% formatStyle(names(calcACH), 
+    datatable(calcACH, colnames = c("Evidence", "Source / Link", "Credibility", "Relevance", "H1", "H2", "H3", "H4", "Credibility Multiplier", "Relevance Multipier", "H1 Consistency Score", "H2 Consistency Score", "H3 Consistency Score", "H4 Consistency Score", "H1 Score", "H2 Score", "H3 Score", "H4 Score"), 
+                          options = list(columnDefs = list(list(visible = FALSE, targets = c(9,10,11,12,13,14))))) %>% formatStyle(names(calcACH), 
                                                                                                                            backgroundColor = styleEqual(c("II", "I", "N", "C", "CC"), c("red", "pink", "white", "lightgreen", "forestgreen"))
                           )
   })
@@ -182,8 +195,16 @@ server <- function(input, output, session) {
     calcACH <- calcACH()
     paste0("ACH Score of H2: '", input$hypothesis2, "' is ", sum(calcACH$OverallScoreH2, na.rm = TRUE))
   })
-  # output$hypothesis3 <- renderText({ paste0("Consistency with H3: ", input$hypothesis3)})
-  # output$hypothesis4 <- renderText({ paste0("Consistency with H4: ", input$hypothesis4)})
+  output$hypothesis3 <- renderText({ paste0("Consistency with H3: ", input$hypothesis3)})
+  output$H3Total <- renderText({
+    calcACH <- calcACH()
+    paste0("ACH Score of H3: '", input$hypothesis3, "' is ", sum(calcACH$OverallScoreH3, na.rm = TRUE))
+  })
+  output$hypothesis4 <- renderText({ paste0("Consistency with H4: ", input$hypothesis4)})
+  output$H4Total <- renderText({
+    calcACH <- calcACH()
+    paste0("ACH Score of H4: '", input$hypothesis4, "' is ", sum(calcACH$OverallScoreH4, na.rm = TRUE))
+  })
   # output$hypothesis5 <- renderText({ paste0("Consistency with H5: ", input$hypothesis5)})
   # output$hypothesis6 <- renderText({ paste0("Consistency with H3: ", input$hypothesis6)})
   
