@@ -8,12 +8,12 @@
 #
 
 require("shiny")
-require("igraph")
-require("readr")
+require("condformat")
 require("DT")
 require("data.table")
+require("dplyr")
 
-# Define UI for application that draws a histogram
+# Define UI for application
 ui <- fluidPage(
   # Application title
   tags$head(tags$style(HTML("
@@ -21,7 +21,7 @@ ui <- fluidPage(
                             background-color:#fff;
                             }"))),
   
-  h1("Social Network Analysis", 
+  h1("Analysis of Competing Hypotheses by Richards (Dick) J. Heuer, Jr.", 
      style = "font-family: 'Source Sans Pro';
      color: #000; text-align: center;
      padding: 20px"),
@@ -29,163 +29,164 @@ ui <- fluidPage(
   
   fluidRow(
     column(12,
-           p("Social network analysis is the process of investigating organizations or other social structures through the use of 
-            networks and graph theory. It can help produce interesting insights into the entities and people within the organization or social 
-             structure by analyzing the ties, edges, or links that connect them.  There a only a few steps you must do to perform a 
-             simple social network analysis.",
+           p("Making judgement on an issue that involves a high risk of error in reasoning?  Richards (Dick) J. Heuer, Jr.'s
+             Analysis of Competing Hypotheses (ACH) might be useful to you.  This method consists of the following steps:",
              style = "font-family: 'Source Sans Pro';"),
-           p("1. In a spreadsheet, create a list of ties (i.e. edges or links) of the organization or social structure you wish to analyze.  You may download a 
-             template from https://github.com/onenonlykpro/Atheneos/blob/master/SocialNetworkAnalysis/Template.csv.  If you only want a demo of this tool, you can download and use a dataset of Game of Thrones families 
-             produced by Shirin Glander (support her by starring her repository at https://github.com/ShirinG).",
+           p("1. Identify all potential hypotheses (this will discourage you from choosing one hyptohesis that you beleive is likely and using evidence to confirm it).",
              style = "font-family: 'Source Sans Pro';"),
-           p("2. Upload your .csv file and confirm your data was uploaded correctly.",
+           p("2. List evidence and/or findings that are relevant to any of the hypotheses.",
+             style = "font-family: 'Source Sans Pro';"),
+           p("3. Evaluate each peice of evidence and/or findings against each hypothesis and aim to disprove as many of them as possible.",
+             style = "font-family: 'Source Sans Pro';"),
+           p("4. Review evidence and hypotheses to determine if you need to find more evidence to disprove any of the hypothesese.",
+             style = "font-family: 'Source Sans Pro';"),
+           p("5. Consider how your estimate would be affected if evidence and/or findings were wrong or incorrectly interpreted.",
              style = "font-family: 'Source Sans Pro';"))),
   br(),
   
-  # Social network analysis setup
   fluidRow(
-    column(12,wellPanel(
-      fileInput("file1", "Choose CSV File: ",
-                accept = c(
-                  "text/csv",
-                  "text/comma-separated-values,text/plain",
-                  ".csv")
-      ),
-      checkboxInput("header", "Headers / Column names are in the first row", TRUE)
-    ))),
-  
-  fluidRow(column(3,
-                  wellPanel(
-                    checkboxInput("directed", "Is this a directed social network (node1 is the source, node2 is the target).", FALSE),
-                    radioButtons("layoutChoice", "Select a graph layout:",
-                                c("Random" = "layout_randomly",
-                                  "Circle" = "layout_in_circle",
-                                  "Star" = "layout_as_star",
-                                  "Tree" = "layout_as_tree",
-                                  "Grid" = "layout_on_grid",
-                                  "Force-directed" = "layout_with_fr")),
-                    radioButtons("colorChoice", "Select a measure to color nodes by:",
-                                 c("Degrees" = "measuredNetwork$degrees",
-                                   "Closeness" = "measuredNetwork$closeness",
-                                   "Betweenness" = "measuredNetwork$betweenness",
-                                   "Eigenvector" = "measuredNetwork$eigenvector")),
-                    sliderInput("vertexLabelSize", "Node label size:",
-                                min = 0, max = 2,
-                                value = 1, step = 0.25),
-                    sliderInput("vertexSize", "Node size:",
-                                min = 0, max = 20,
-                                value = 5, step = 1))),
-    column(9,
-           plotOutput("snaGraph"))
-  ),
+    column(6, wellPanel(
+      textInput("hypothesis1", "Hypothesis #1", value = "", width = NULL, placeholder = NULL),
+      textInput("hypothesis2", "Hypothesis #2", value = "", width = NULL, placeholder = NULL)
+      # textInput("hypothesis3", "Hypothesis #3", value = "", width = NULL, placeholder = NULL),
+      # textInput("hypothesis4", "Hypothesis #4", value = "", width = NULL, placeholder = NULL),
+      # textInput("hypothesis5", "Hypothesis #5", value = "", width = NULL, placeholder = NULL),
+      # textInput("hypothesis6", "Hypothesis #6", value = "", width = NULL, placeholder = NULL)
+    )),
+    column(6, wellPanel(
+      textInput("evidence", "Evidence", value = "", width = NULL, placeholder = NULL),
+      textInput("source", "Source / Link", value = "", width = NULL, placeholder = NULL),
+      selectInput("credibility", "Credibility", 
+                  choices = list("High" = "High", 
+                                 "Moderate" = "Moderate",
+                                 "Low" = "Low"), 
+                  selected = "Moderate"),
+      selectInput("relevance", "Relevance", 
+                  choices = list("High" = "High", 
+                                 "Moderate" = "Moderate",
+                                 "Low" = "Low"), 
+                  selected = "Moderate"),
+      selectInput("consistency1", textOutput("hypothesis1"), 
+                  choices = list("Not Applicable or Neutral" = "N", 
+                                 "Highly consistent with hypothesis" = "CC",
+                                 "Consistent with hypothesis" = "C",
+                                 "Inconsistent with hypothesis" = "I",
+                                 "Highly inconsistent with hypothesis" = "II"), 
+                  selected = "N"),
+      selectInput("consistency2", textOutput("hypothesis2"), 
+                  choices = list("Not Applicable or Neutral" = "N", 
+                                 "Highly consistent with hypothesis" = "CC",
+                                 "Consistent with hypothesis" = "C",
+                                 "Inconsistent with hypothesis" = "I",
+                                 "Highly inconsistent with hypothesis" = "II"), 
+                  selected = "N"),
+      # selectInput("consistency3", textOutput("hypothesis3"), 
+      #             choices = list("Not Applicable or Neutral" = "N", 
+      #                            "Highly consistent with hypothesis" = "CC",
+      #                            "Consistent with hypothesis" = "C",
+      #                            "Inconsistent with hypothesis" = "I",
+      #                            "Highly inconsistent with hypothesis" = "II"), 
+      #             selected = "N"),
+      # selectInput("consistency4", textOutput("hypothesis4"), 
+      #             choices = list("Not Applicable or Neutral" = "N", 
+      #                            "Highly consistent with hypothesis" = "CC",
+      #                            "Consistent with hypothesis" = "C",
+      #                            "Inconsistent with hypothesis" = "I",
+      #                            "Highly inconsistent with hypothesis" = "II"), 
+      #             selected = "N"),
+      # selectInput("consistency5", textOutput("hypothesis5"), 
+      #             choices = list("Not Applicable or Neutral" = "N", 
+      #                            "Highly consistent with hypothesis" = "CC",
+      #                            "Consistent with hypothesis" = "C",
+      #                            "Inconsistent with hypothesis" = "I",
+      #                            "Highly inconsistent with hypothesis" = "II"), 
+      #             selected = "N"),
+      # selectInput("consistency6", textOutput("hypothesis6"), 
+      #             choices = list("Not Applicable or Neutral" = "N", 
+      #                            "Highly consistent with hypothesis" = "CC",
+      #                            "Consistent with hypothesis" = "C",
+      #                            "Inconsistent with hypothesis" = "I",
+      #                            "Highly inconsistent with hypothesis" = "II"), 
+      #             selected = "N"),
+      actionButton("update", "Add ACH Entry")))),
+  br(),
   
   fluidRow(column(12,
-                  dataTableOutput("measuredNetwork")))
-)
+                  dataTableOutput("ACHPrintout"))),
+  br(),
+  
+  fluidRow(column(2, textOutput("H1Total")),
+           column(2, textOutput("H2Total"))))
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
-   
-  edgelist <- reactive({
-    inFile <- input$file1
-    if (is.null(inFile))
-      return(NULL)
-    edgelist <- read.csv(inFile$datapath, header = input$header)
-    edgelist
-  })
-  
-  # Construct list of nodes from user's edgelist
-  nodelist <- reactive({
-    edgelist <- edgelist()
-    nodelist1 <- as.data.frame(edgelist$node1)
-    nodelist2 <- as.data.frame(edgelist$node2)
-    names(nodelist1) <- names(nodelist2)
-    nodelist <- rbind(nodelist1, nodelist2)
-    nodelist <- unique(nodelist)
-    names(nodelist) <- "node"
-    nodelist
-  })
-  
-  # Construct social network from edge and node list
-  network <- reactive({
-    edgelist <- edgelist()
-    nodelist <- nodelist()
-    network <- graph_from_data_frame(edgelist,
-                                 vertices = nodelist,
-                                 directed = input$directed)
-    network
-  })
-  
-  # Create data frame of centrality measures
-  measuredNetwork <- reactive({
-    network <- network()
-    nodelist <- nodelist()
-    degrees <- as.data.frame(degree(network, mode = "all"))
-    names(degrees) <- "degrees"
-    closeness <- as.data.frame(closeness(network, mode = "all", weights = NA, normalized = TRUE))
-    names(closeness) <- "closeness"
-    betweennessCentrality <- as.data.frame(betweenness(network, directed = input$directed, weights = NA, normalized = TRUE))
-    names(betweennessCentrality) <- "betweenness"
-    eigenvector <- as.data.frame(evcent(network, directed = input$directed, scale = TRUE, weights = NULL))
-    eigenvector <- eigenvector$vector
-    names(eigenvector) <- "eigenvector"
-    measuredNetwork <- cbind(nodelist, degrees, closeness, betweennessCentrality, eigenvector)
-    measuredNetwork
-  })
-  
-  # Print table of centrality measures
-  output$measuredNetwork <- renderDataTable({
-    measuredNetwork <- measuredNetwork()
-    datatable(measuredNetwork)
-  })
-  
-  # Print SNA graph
-  output$snaGraph <- renderPlot({
-    network <- network()
-    ## Set layout from user choice
-    par(mar=c(0,0,0,0))
-    if (input$layoutChoice == "layout_randomly") {
-      layoutChoice <- layout_randomly
-    } else if (input$layoutChoice == "layout_in_circle") {
-      layoutChoice <- layout_in_circle
-    } else if (input$layoutChoice == "layout_as_star") {
-      layoutChoice <- layout_as_star
-    } else if (input$layoutChoice == "layout_as_tree") {
-      layoutChoice <- layout_as_tree
-    } else if (input$layoutChoice == "layout_on_grid") {
-      layoutChoice <- layout_on_grid
-    } else {
-      layoutChoice <- layout_with_fr
-    }
-    
-    ## Set heatmap coloring on user input
-    measuredNetwork <- measuredNetwork()
-    if (input$colorChoice == "measuredNetwork$degrees") {
-      colorChoice <- measuredNetwork$degrees
-    } else if (input$colorChoice == "measuredNetwork$closeness") {
-      colorChoice <- measuredNetwork$closeness
-    } else if (input$colorChoice == "measuredNetwork$betweenness") {
-      colorChoice <- measuredNetwork$betweenness
-    } else if (input$colorChoice == "measuredNetwork$eigenvector") {
-      colorChoice <- measuredNetwork$eigenvector
-    }
-    oranges <- colorRampPalette(c("lightgray", "dark red"))
-    col <- oranges(max(colorChoice) * 5)
-    col <- col[colorChoice * 5]
-    
-    ## Print graph
-    snaGraph <- plot(network,
-                     vertex.size = input$vertexSize,
-                     vertex.color = col,
-                     vertex.label.color = "black",
-                     vertex.label.cex = input$vertexLabelSize,
-                     edge.curved = .25,
-                     edge.color = "grey20",
-                     layout = layoutChoice)
-  })
+server <- function(input, output, session) {
 
+  
+  # Add user input to ACH data frame
+  values <- reactiveValues()
+  values$df <- data.frame(Evidence = numeric(0), 
+                          Source = numeric(0),
+                          Credibility = numeric(0),
+                          Relevance = numeric(0),
+                          H1 = numeric(0),
+                          H2 = numeric(0))
+  # H3 = numeric(0),
+  # H4 = numeric(0),
+  # H5 = numeric(0),
+  # H6 = numeric(0))
+  newEntry <- observe({
+    if(input$update > 0) {
+      newLine <- isolate(c(input$evidence, input$source, input$credibility, input$relevance, input$consistency1, input$consistency2))
+      isolate(values$df[nrow(values$df) + 1,] <- c(input$evidence, input$source, input$credibility, input$relevance, input$consistency1, input$consistency2))
+    }
+  })
+  
+  calcACH <- reactive({
+    calcACH <- values$df
+    calcACH$CredMultiplier[calcACH$Credibility == "High"] <- 1.414
+    calcACH$CredMultiplier[calcACH$Credibility == "Moderate"] <- 1.000
+    calcACH$CredMultiplier[calcACH$Credibility == "Low"] <- 0.707
+    calcACH$RelaMultiplier[calcACH$Relevance == "High"] <- 1.414
+    calcACH$RelaMultiplier[calcACH$Relevance == "Moderate"] <- 1.000
+    calcACH$RelaMultiplier[calcACH$Relevance == "Low"] <- 0.707
+    calcACH$ConsisScoreH1[calcACH$H1 == "II"] <- -2
+    calcACH$ConsisScoreH1[calcACH$H1 == "I"] <- -1
+    calcACH$ConsisScoreH1[calcACH$H1 == "CC"] <- 1
+    calcACH$ConsisScoreH1[calcACH$H1 == "C" | calcACH$H.1 == "N"] <- 0
+    calcACH$ConsisScoreH2[calcACH$H2 == "II"] <- -2
+    calcACH$ConsisScoreH2[calcACH$H2 == "I"] <- -1
+    calcACH$ConsisScoreH2[calcACH$H2 == "CC"] <- 1
+    calcACH$ConsisScoreH2[calcACH$H2 == "C" | calcACH$H.2 == "N"] <- 0
+    calcACH$OverallScoreH1 <- (calcACH$ConsisScoreH1 * calcACH$CredMultiplier) * calcACH$RelaMultiplier
+    calcACH$OverallScoreH2 <- (calcACH$ConsisScoreH2 * calcACH$CredMultiplier) * calcACH$RelaMultiplier
+    calcACH
+  })
+    
+  
+  output$ACHPrintout <- renderDataTable({
+    calcACH <- calcACH()
+    datatable(calcACH, colnames = c("Evidence", "Source / Link", "Credibility", "Relevance", "H1", "H2", "Credibility Multiplier", "Relevance Multipier", "H1 Consistency Score", "H2 Consistency Score", "H1 Score", "H2 Score"), 
+                          options = list(columnDefs = list(list(visible = FALSE, targets = c(7,8,9,10))))) %>% formatStyle(names(calcACH), 
+                                                                                                                           backgroundColor = styleEqual(c("II", "I", "N", "C", "CC"), c("red", "pink", "white", "lightgreen", "forestgreen"))
+                          )
+  })
+  
+  # Define all outputs for UI
+  output$hypothesis1 <- renderText({ paste0("Consistency with H1: ", input$hypothesis1)})
+  output$H1Total <- renderText({
+    calcACH <- calcACH()
+    paste0("ACH Score of H1: '", input$hypothesis1, "' is ", sum(calcACH$OverallScoreH1, na.rm = TRUE))
+  })
+  output$hypothesis2 <- renderText({ paste0("Consistency with H2: ", input$hypothesis2)})
+  output$H2Total <- renderText({
+    calcACH <- calcACH()
+    paste0("ACH Score of H2: '", input$hypothesis2, "' is ", sum(calcACH$OverallScoreH2, na.rm = TRUE))
+  })
+  # output$hypothesis3 <- renderText({ paste0("Consistency with H3: ", input$hypothesis3)})
+  # output$hypothesis4 <- renderText({ paste0("Consistency with H4: ", input$hypothesis4)})
+  # output$hypothesis5 <- renderText({ paste0("Consistency with H5: ", input$hypothesis5)})
+  # output$hypothesis6 <- renderText({ paste0("Consistency with H3: ", input$hypothesis6)})
+  
 }
-
 # Run the application 
 shinyApp(ui = ui, server = server)
-
